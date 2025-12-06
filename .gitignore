@@ -1,0 +1,37 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Turborepo
+.turbo
+
+# Environment Variables
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+!supabase/.env.example
+
+# Supabase
+supabase/.temp/
+supabase/functions/_shared/deno.lock
+supabase/.branches/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
