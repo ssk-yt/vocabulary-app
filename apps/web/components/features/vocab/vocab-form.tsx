@@ -38,6 +38,10 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
                 definition: data.definition,
                 part_of_speech: data.part_of_speech,
                 example: data.example,
+                etymology: data.etymology,
+                // Split by comma, space, newline, etc.
+                synonyms: data.synonyms ? data.synonyms.split(/[,\s\n]+/).map(s => s.trim()).filter(Boolean) : [],
+                collocations: data.collocations ? data.collocations.split(/[,\s\n]+/).map(s => s.trim()).filter(Boolean) : [],
                 source_memo: data.source_memo,
                 status: "uninput",
             }).select();
@@ -63,9 +67,9 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
 
             reset();
             onSuccess?.();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to add vocabulary:", error);
-            alert("Failed to add vocabulary");
+            alert(`Failed to add vocabulary: ${error.message || error.toString()}`);
         } finally {
             setIsLoading(false);
         }
@@ -74,51 +78,80 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="term">Term</Label>
-                <Input id="term" placeholder="e.g. Serendipity" {...register("term")} />
+                <Label htmlFor="term">単語</Label>
+                <Input id="term" placeholder="例: Serendipity" {...register("term")} />
                 {errors.term && (
                     <p className="text-sm text-red-500">{errors.term.message}</p>
                 )}
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="definition">Definition</Label>
+                <Label htmlFor="definition">意味</Label>
                 <Input
                     id="definition"
-                    placeholder="Meaning of the word"
+                    placeholder="単語の意味"
                     {...register("definition")}
                 />
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="part_of_speech">Part of Speech</Label>
+                <Label htmlFor="part_of_speech">品詞</Label>
                 <Input
                     id="part_of_speech"
-                    placeholder="e.g. noun, verb"
+                    placeholder="例: 名詞, 動詞"
                     {...register("part_of_speech")}
                 />
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="example">Example Sentence</Label>
+                <Label htmlFor="example">例文</Label>
                 <Input
                     id="example"
-                    placeholder="Context usage"
+                    placeholder="文脈や使用例"
                     {...register("example")}
                 />
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="source_memo">Source / Memo</Label>
+                <Label htmlFor="source_memo">出典 / メモ</Label>
                 <Input
                     id="source_memo"
-                    placeholder="Where did you find this?"
+                    placeholder="どこで見つけましたか？"
                     {...register("source_memo")}
                 />
             </div>
 
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                    <Label htmlFor="etymology">語源</Label>
+                    <Input
+                        id="etymology"
+                        placeholder="単語の由来"
+                        {...register("etymology")}
+                    />
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="synonyms">類義語</Label>
+                <Input
+                    id="synonyms"
+                    placeholder="スペースやカンマで区切って入力"
+                    {...register("synonyms")}
+                />
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="collocations">コロケーション</Label>
+                <Input
+                    id="collocations"
+                    placeholder="関連語句を入力"
+                    {...register("collocations")}
+                />
+            </div>
+
             <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Adding..." : "Add Vocabulary"}
+                {isLoading ? "追加中..." : "単語を追加"}
             </Button>
         </form>
     );

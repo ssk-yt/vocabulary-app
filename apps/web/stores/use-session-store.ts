@@ -6,8 +6,9 @@ interface SessionState {
     setApiKey: (key: string) => void;
     clearApiKey: () => void;
 }
-
+                            // ストアを作成（データ置き場）
 export const useSessionStore = create<SessionState>()(
+    // ストアの中身変更時，sessionStorageに保存する
     persist(
         (set) => ({
             apiKey: null,
@@ -15,7 +16,9 @@ export const useSessionStore = create<SessionState>()(
             clearApiKey: () => set({ apiKey: null }),
         }),
         {
+            // ストアの名前
             name: "vocab-session-storage",
+            // ブラウザのタブを閉じる
             storage: createJSONStorage(() => sessionStorage),
         }
     )

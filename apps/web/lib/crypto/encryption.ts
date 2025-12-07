@@ -1,9 +1,14 @@
+// 暗号化・復号化のコード
 export interface EncryptedData {
+    // APIキーを変換したテキスト
     ciphertext: string; // Base64 encoded
+    // ランダムな数値（Initial Vector）
     iv: string; // Base64 encoded
+    // ランダムな数値（Salting）
     salt: string; // Base64 encoded
 }
 
+// 暗号化の仕様
 const ALGORITHM = "AES-GCM";
 const KEY_LENGTH = 256;
 const ITERATIONS = 100000;

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@repo/ui";
 import { VocabForm } from "./vocab-form";
 
-export function AddVocabModal() {
+export function AddVocabModal({ onVocabAdded }: { onVocabAdded?: () => void }) {
     const [open, setOpen] = useState(false);
 
     return (
@@ -17,7 +17,10 @@ export function AddVocabModal() {
                         <DialogTitle>Add New Vocabulary</DialogTitle>
                     </DialogHeader>
                     {/* VocabFormのonSuccessがtrueになったらモーダルを閉じる */}
-                    <VocabForm onSuccess={() => setOpen(false)} />
+                    <VocabForm onSuccess={() => {
+                        setOpen(false);
+                        onVocabAdded?.();
+                    }} />
                 </DialogContent>
             </Dialog>
         </>

@@ -6,6 +6,10 @@ export const vocabularySchema = z.object({
     part_of_speech: z.string().optional(),
     example: z.string().optional(),
     source_memo: z.string().optional(),
+    etymology: z.string().optional(),
+    ipa: z.string().optional(),
+    synonyms: z.string().optional(),
+    collocations: z.string().optional(),
 });
 
 export type VocabularyInput = z.infer<typeof vocabularySchema>;

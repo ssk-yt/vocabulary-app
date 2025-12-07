@@ -1,8 +1,10 @@
+// 暗号化機能のテストコード（アプリを使うときには実行されない）
+// このコードは消しても良いかもしれない
 import { describe, it, expect } from "vitest";
 import { encryptAPIKey, decryptAPIKey } from "./encryption";
 
 describe("Encryption Logic", () => {
-    const apiKey = "sk-test-1234567890abcdef";
+    const apiKey = "api-key";
     const password = "my-secret-password";
 
     it("should encrypt and decrypt correctly with the correct password", async () => {

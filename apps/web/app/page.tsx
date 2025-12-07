@@ -18,23 +18,22 @@ export default function Page() {
     const [selectedVocab, setSelectedVocab] = useState<any>(null);
     const supabase = createClient();
 
-    // Subscribe to realtime updates
-    useRealtime("vocabulary");
-    // 画面を開いたときに単語を全部取得する
-    useEffect(() => {
-        async function fetchVocab() {
-            // ユーザーがログインしていなければフェッチしない
-            if (!user) return;
-            const { data } = await supabase
-                // vocabularyテーブルから
-                .from("vocabulary")
-                // ユーザーの単語だけを取得する
-                .select("*")
-                // 作成日時で降順でソートする
-                .order("created_at", { ascending: false });
+    const fetchVocab = async () => {
+        if (!user) return;
+        const { data } = await supabase
+            .from("vocabulary")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false });
 
-            if (data) setVocabList(data);
-        }
+        if (data) setVocabList(data);
+    };
+
+    // Subscribe to realtime updates
+    useRealtime("vocabulary", fetchVocab);
+
+    // Initial fetch
+    useEffect(() => {
         fetchVocab();
     }, [user, supabase]);
 
@@ -71,7 +70,7 @@ export default function Page() {
                 <div className="px-4 py-6 sm:px-0">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-xl font-semibold">Your Vocabulary</h2>
-                        <AddVocabModal />
+                        <AddVocabModal onVocabAdded={fetchVocab} />
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
