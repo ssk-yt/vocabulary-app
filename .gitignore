@@ -11,8 +11,6 @@ dist/
 # Turborepo
 .turbo
 
-# Docs
-Docs/
 
 # Environment Variables
 .env

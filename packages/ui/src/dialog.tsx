@@ -28,3 +28,4 @@ export const DialogTitle = ({ children }: any) => <h2 className="text-lg font-bo
 export const DialogTrigger = ({ children, onClick }: any) => (
     <div onClick={onClick}>{children}</div>
 );
+export const DialogDescription = ({ children }: any) => <p className="text-sm text-gray-500 mt-2">{children}</p>;

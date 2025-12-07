@@ -1,9 +1,3 @@
-ご提示いただいた議論（`sessionStorage` の活用とロック解除モーダルの導入）を反映し、**セキュリティ実装仕様書 (Version 1.1)** を作成しました。
-
-以下のMarkdownを `SECURITY_SPEC.md` として保存してください。
-
------
-
 # セキュリティ実装仕様書：Context-Based AI Vocabulary App
 
 **Version:** 1.1 (Session Storage & Unlock Modal)

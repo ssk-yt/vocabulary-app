@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { UnlockModal } from "@/components/features/auth/unlock-modal";
 
 export const metadata: Metadata = {
     title: "Vocabulary App",
@@ -15,7 +16,10 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body>
-                <Providers>{children}</Providers>
+                <Providers>
+                    <UnlockModal />
+                    {children}
+                </Providers>
             </body>
         </html>
     );
