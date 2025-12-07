@@ -15,17 +15,21 @@ import {
 } from "@repo/ui";
 
 export function UnlockModal() {
+    // Auth関係のloading状態とログインしているユーザー
     const { user, isLoading: authLoading } = useAuth();
     const { apiKey, setApiKey } = useSessionStore();
     const [isOpen, setIsOpen] = useState(false);
     const [password, setPassword] = useState("");
+    // 復号時のローディング
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
     // Check if we need to show the modal
     useEffect(() => {
         const checkStatus = async () => {
+            // ログイン済みか確認中もしくはログインしていなければ，DBからデータを引っ張る前に終了（useEffectはauthLoadingが変更されたらまた実行される）
             if (authLoading || !user) return;
+            // もし複合済みのAPI Keyがあれば，supabaseクライアントをDBからデータを引っ張る前に終了
             if (apiKey) {
                 setIsOpen(false);
                 return;
@@ -33,12 +37,15 @@ export function UnlockModal() {
 
             const supabase = createClient();
             const { data } = await supabase
+                // プロファイルから
                 .from("profiles")
+                // 暗号化済みのAPI Keyを取得
                 .select("encrypted_api_key")
+                // ログインしているユーザーのもののみ
                 .eq("id", user.id)
                 .single();
 
-            // Only show modal if an encrypted key exists but no session key
+            // 暗号化されたAPI KeyがDBにあり（つまり一度もAPIキーを設定していない場合はモーダルが開かない），かつ複合済みのAPIキーがなければ，モーダルを開く（→）
             if (data?.encrypted_api_key && !apiKey) {
                 setIsOpen(true);
             }
@@ -48,14 +55,18 @@ export function UnlockModal() {
     }, [user, authLoading, apiKey]);
 
     const handleUnlock = async (e: React.FormEvent) => {
+        // モーダルのフォーム送信でページがリロードされないようにする
         e.preventDefault();
+        // Unlockされたら，フォームのエラー表示を切る
         setError("");
+        // Unlockの処理中にローディング表示を立てる
         setIsLoading(true);
 
         try {
             const supabase = createClient();
+            // モーダルに情報を入力したのにユーザーがいない場合は，エラーを投げる
             if (!user) throw new Error("No user found");
-
+            // もしモーダルが表示されてからDBの情報が変更されいても，対応できるように，再取得する
             const { data } = await supabase
                 .from("profiles")
                 .select("encrypted_api_key")
@@ -65,17 +76,22 @@ export function UnlockModal() {
             if (!data?.encrypted_api_key) {
                 throw new Error("No encrypted key found to unlock");
             }
-
+            // DBから持ってきた暗号化済みのAPI KeyをJSONにパースして復号
             const encryptedData: EncryptedData = JSON.parse(data.encrypted_api_key);
             const decryptedKey = await decryptAPIKey(encryptedData, password);
-
+            // 復号したAPI Keyをセット
             setApiKey(decryptedKey);
+            // モーダルを閉じる
             setIsOpen(false);
+            // パスワードを空にする
             setPassword("");
         } catch (err: any) {
+            // コンソールにエラー内容を記録
             console.error("Unlock failed:", err);
+            // パスワードが違う場合にエラー
             setError("Incorrect password or decryption failed.");
         } finally {
+            // Unlock中のローディングを切る
             setIsLoading(false);
         }
     };

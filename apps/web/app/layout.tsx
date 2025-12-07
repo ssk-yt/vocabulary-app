@@ -16,7 +16,9 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body>
+                {/* Auth関係の情報を提供するProviders */}
                 <Providers>
+                    
                     <UnlockModal />
                     {children}
                 </Providers>

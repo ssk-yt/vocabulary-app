@@ -15,15 +15,19 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
     const supabase = createClient();
 
     const {
+        // inputされた値の参照
         register,
+        // バリデーション成功時にフォームのデータを受け取る
         handleSubmit,
         reset,
         formState: { errors },
     } = useForm<VocabularyInput>({
+        // Zodでバリデーションするときに使う
         resolver: zodResolver(vocabularySchema),
     });
 
     const onSubmit = async (data: VocabularyInput) => {
+        // ログインしていなければ何もしない
         if (!user) return;
         setIsLoading(true);
 

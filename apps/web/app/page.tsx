@@ -20,25 +20,24 @@ export default function Page() {
 
     // Subscribe to realtime updates
     useRealtime("vocabulary");
-
+    // 画面を開いたときに単語を全部取得する
     useEffect(() => {
         async function fetchVocab() {
+            // ユーザーがログインしていなければフェッチしない
             if (!user) return;
             const { data } = await supabase
+                // vocabularyテーブルから
                 .from("vocabulary")
+                // ユーザーの単語だけを取得する
                 .select("*")
+                // 作成日時で降順でソートする
                 .order("created_at", { ascending: false });
 
             if (data) setVocabList(data);
         }
         fetchVocab();
-    }, [user, supabase]); // Add dependency on supabase/user to refetch if needed, but realtime should handle updates? 
-    // Actually realtime triggers router.refresh(), but we are fetching client side here.
-    // Ideally we should use Server Components or React Query. 
-    // For now, let's just re-fetch when the component mounts or when we get a realtime event (if we modified useRealtime to trigger a callback).
-    // But useRealtime triggers router.refresh(), which refreshes Server Components. 
-    // Since this is a Client Component, router.refresh() might not re-run the useEffect.
-    // Let's keep it simple: just fetch on mount.
+    }, [user, supabase]);
+
 
     if (isLoading) {
         return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
@@ -110,7 +109,9 @@ export default function Page() {
 
             <VocabDetailsModal
                 vocab={selectedVocab}
+                // selectedVocabがあればtrue，なければfalse
                 open={!!selectedVocab}
+                // 閉じたときにselectedVocabをnullにする
                 onOpenChange={(open) => !open && setSelectedVocab(null)}
             />
         </main>
