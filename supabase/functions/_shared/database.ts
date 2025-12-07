@@ -1,4 +1,5 @@
 
+// Edge Functions用のDB接続設定の一元管理をするファイル→nextjs側のDB接続設定はdb/src/index.tsに
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema.ts";

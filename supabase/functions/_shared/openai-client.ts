@@ -1,5 +1,6 @@
 import OpenAI from "https://deno.land/x/openai@v4.24.0/mod.ts";
 
+// Edge Functions用のOpenAIクライアントの生成
 export const createOpenAIClient = (req: Request) => {
     // 1. Try to get key from request header (Client-side encrypted key)
     const authHeader = req.headers.get("X-OpenAI-Key");

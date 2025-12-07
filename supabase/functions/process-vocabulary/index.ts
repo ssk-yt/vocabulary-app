@@ -59,25 +59,65 @@ Deno.serve(async (req) => {
         console.log("Calling Google Gemini Native API...");
 
         const systemPrompt = `
-        You are an expert English teacher.
-        Given a term, provide the following in JSON format:
-        - definition: A concise definition in English.
-        - part_of_speech: The part of speech (noun, verb, adjective, etc.).
-        - example: A natural example sentence using the term.
-        - synonyms: An array of 3-5 synonyms.
-        - etymology: A brief explanation of the word's origin.
-        - ipa: The International Phonetic Alphabet pronunciation.
-        
-        Output JSON only. Do not include markdown formatting like \`\`\`json.
+        あなたは、文脈の中で言葉を学ぶのを手助けする、優秀な言語学者および語彙コーチです。
+        ユーザーの入力から、学習効果を高めるための詳細な構造化データを抽出・生成することが目的です。
+
+        ルール:
+        1. ユーザーの「チャット文脈 (Chat Context)」と「手動入力 (Manual Input)」を分析してください。
+        2. 対象となる「単語 (Term)」が指定されていない場合は特定してください。
+        3. 文脈に即した最適な「意味 (Definition)」と「品詞 (Part of Speech)」を特定してください。
+        4. 正しい発音記号 (IPA) を提供してください。
+        5. 記憶の定着を助けるための「語源 (Etymology)」「類義語 (Synonyms)」「コロケーション (Collocations)」を生成してください。
+           - 語源は、単語のイメージが湧くような簡潔な解説にしてください。
+           - コロケーションは、その単語がよく使われる自然な語の組み合わせを挙げてください。その日本語訳も必ず，英語の後に併記してください．
+           - 類義語は、その単語の類似する単語を挙げてください。その日本語訳も必ず，英語の後に併記してください．
+        6. 「例文 (Example)」を抽出または生成してください。
+           - 文脈自体が例文として使える場合はそれを使用します。
+           - 例文のあとには，必ず日本語訳を併記してください。
+        7. 解説（意味、語源など）は日本語で出力してください。単語、例文、コロケーションはターゲット言語で出力してください。
+        8. 出力は以下のJSON形式のみを返してください。マークダウンは不要です。
+
+        {
+            "term": "...",
+            "definition": "...",
+            "part_of_speech": "...",
+            "ipa": "...",
+            "example": "...",
+            "etymology": "...",
+            "synonyms": ["...", ...],
+            "collocations": ["...", ...]
+        }
         `;
 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${googleApiKey}`;
+
+        const userPrompt = `
+        Target Term: ${vocab.term}
+        
+        [Manual Inputs (Review these carefully and preserve them)]
+        - Definition: ${vocab.definition || "(Empty)"}
+        - Part of Speech: ${vocab.part_of_speech || "(Empty)"}
+        - Example: ${vocab.example || "(Empty)"}
+        - Synonyms: ${vocab.synonyms?.join(", ") || "(Empty)"}
+        - Collocations: ${vocab.collocations?.join(", ") || "(Empty)"}
+        - Etymology: ${vocab.etymology || "(Empty)"}
+        - IPA: ${vocab.ipa || "(Empty)"}
+
+        Chat Context / Memo:
+        """
+        ${vocab.source_memo || "None"}
+        """
+
+        Instruction: 
+        1. "Manual Inputs" に値が入っている項目は、**絶対にその内容を変更せず**、そのまま出力してください。
+        2. "(Empty)" または "None" になっている項目、および不足している情報を、文脈に基づいて補完してください。
+        `;
 
         const payload = {
             contents: [
                 {
                     role: "user",
-                    parts: [{ text: `${systemPrompt}\n\nTerm: ${vocab.term}. Context: ${vocab.source_memo || "None"}` }]
+                    parts: [{ text: systemPrompt + "\n\n" + userPrompt }]
                 }
             ],
             generationConfig: {
@@ -150,6 +190,7 @@ Deno.serve(async (req) => {
                 part_of_speech: content.part_of_speech,
                 example: content.example,
                 synonyms: content.synonyms,
+                collocations: content.collocations,
                 etymology: content.etymology,
                 ipa: content.ipa,
                 embedding: embedding,

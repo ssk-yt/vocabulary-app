@@ -51,6 +51,19 @@ export function VocabDetailsModal({ vocab, open, onOpenChange }: VocabDetailsMod
                         </section>
                     )}
 
+                    {vocab.collocations && vocab.collocations.length > 0 && (
+                        <section>
+                            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">コロケーション</h3>
+                            <ul className="mt-1 space-y-1">
+                                {vocab.collocations.map((col: string, index: number) => (
+                                    <li key={index} className="text-gray-700 text-sm bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
+                                        {col}
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+
                     {vocab.etymology && (
                         <section>
                             <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">語源</h3>
