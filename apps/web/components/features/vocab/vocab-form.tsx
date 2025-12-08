@@ -12,6 +12,7 @@ import { useSessionStore } from "@/stores/use-session-store";
 export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
+    const [chatInput, setChatInput] = useState("");
     const supabase = createClient();
 
     const {
@@ -20,6 +21,8 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
         // バリデーション成功時にフォームのデータを受け取る
         handleSubmit,
         reset,
+        setValue,
+        getValues,
         formState: { errors },
     } = useForm<VocabularyInput>({
         // Zodでバリデーションするときに使う
@@ -29,12 +32,24 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
     const onSubmit = async (data: VocabularyInput) => {
         // ログインしていなければ何もしない
         if (!user) return;
+
+        // Custom Validation: Require either term OR chatInput
+        // Note: validating against placeholders if Auto API was used
+        if (!data.term && !chatInput.trim()) {
+            alert("Please enter a term or provide context for auto-generation.");
+            return;
+        }
+
         setIsLoading(true);
 
         try {
+            // If term is empty (but bypassed validation via placeholder logic in handleAutoApi), 
+            // ensure we send something. If we are here, data.term might be "Generating..." or a valid term.
+            const termToInsert = data.term || "Generating...";
+
             const { data: insertedData, error } = await supabase.from("vocabulary").insert({
                 user_id: user.id,
-                term: data.term,
+                term: termToInsert,
                 definition: data.definition,
                 part_of_speech: data.part_of_speech,
                 example: data.example,
@@ -44,6 +59,7 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
                 collocations: data.collocations ? data.collocations.split(/[,\s\n]+/).map(s => s.trim()).filter(Boolean) : [],
                 source_memo: data.source_memo,
                 status: "uninput",
+                is_generating: true,
             }).select();
 
             if (error) throw error;
@@ -54,18 +70,27 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
 
             if (apiKey) {
                 console.log("Invoking process-vocabulary...");
-                const { data: funcData, error: funcError } = await supabase.functions.invoke("process-vocabulary", {
-                    body: { record_id: insertedData ? insertedData[0]?.id : null },
+                // Fire and forget - don't await to keep UI responsive
+                supabase.functions.invoke("process-vocabulary", {
+                    body: {
+                        record_id: insertedData ? insertedData[0]?.id : null,
+                        chat_context: chatInput, // Pass chat instructions directly
+                        mode: "register"
+                    },
                     headers: {
                         "X-OpenAI-Key": apiKey
                     }
+                }).then(({ data, error }) => {
+                    console.log("Edge Function response:", { data, error });
+                }).catch(err => {
+                    console.error("Edge Function invocation error:", err);
                 });
-                console.log("Edge Function response:", { data: funcData, error: funcError });
             } else {
                 console.warn("No API key found in session store. Skipping AI processing.");
             }
 
             reset();
+            setChatInput("");
             onSuccess?.();
         } catch (error: any) {
             console.error("Failed to add vocabulary:", error);
@@ -75,10 +100,74 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
         }
     };
 
+    // Handler for Auto API button click
+    const handleAutoApiClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (!chatInput.trim()) {
+            alert("Please provide context to generate.");
+            return;
+        }
+
+        // If term is empty, fill it with placeholder to pass Zod validation
+        const currentTerm = getValues("term");
+        if (!currentTerm) {
+            setValue("term", "Generating...", { shouldValidate: true });
+        }
+
+        // Submit the form
+        handleSubmit(onSubmit)();
+    };
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Chat / Context Input Area */}
             <div className="space-y-2">
-                <Label htmlFor="term">単語</Label>
+                <Label htmlFor="chat-context" className="text-base font-semibold text-primary">
+                    AI Auto-Complete
+                </Label>
+                <div className="flex w-full items-center space-x-2">
+                    <Input
+                        id="chat-context"
+                        type="text"
+                        placeholder="Paste context, sentence, or instructions here..."
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        className="flex-1"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                document.getElementById('auto-api-btn')?.click();
+                            }
+                        }}
+                    />
+                    <Button
+                        id="auto-api-btn"
+                        type="button"
+                        disabled={isLoading}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
+                        onClick={handleAutoApiClick}
+                    >
+                        Auto API
+                    </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                    Enter context above and click 'Auto API' to auto-generate details (even without a term).
+                </p>
+            </div>
+
+            <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                        Or Manual Input
+                    </span>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="term">単語 <span className="text-red-500">*</span></Label>
                 <Input id="term" placeholder="例: Serendipity" {...register("term")} />
                 {errors.term && (
                     <p className="text-sm text-red-500">{errors.term.message}</p>
@@ -150,7 +239,7 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
                 />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={isLoading}>
                 {isLoading ? "追加中..." : "単語を追加"}
             </Button>
         </form>

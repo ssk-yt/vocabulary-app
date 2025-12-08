@@ -54,7 +54,7 @@ Features a Notion-like interface for adding words and an AI agent that automatic
 
 5.  **Start Edge Functions**
     ```bash
-    supabase functions serve
+    npx supabase functions serve --env-file supabase/.env
     ```
 
 6.  **Run the Frontend**

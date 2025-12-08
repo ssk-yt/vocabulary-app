@@ -8,6 +8,12 @@ export const metadata: Metadata = {
     description: "Context-Based Vocabulary App",
 };
 
+export const viewport = {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+};
+
 export default function RootLayout({
     children,
 }: {
@@ -18,7 +24,7 @@ export default function RootLayout({
             <body>
                 {/* Auth関係の情報を提供するProviders */}
                 <Providers>
-                    
+
                     <UnlockModal />
                     {children}
                 </Providers>
