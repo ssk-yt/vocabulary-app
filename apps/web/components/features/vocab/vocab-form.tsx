@@ -8,11 +8,13 @@ import { Button, Input, Label } from "@repo/ui";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/auth-provider";
 import { useSessionStore } from "@/stores/use-session-store";
+import { ChatInput } from "@repo/ui";
+import { useRef } from "react";
 
 export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
-    const [chatInput, setChatInput] = useState("");
+    const chatInputRef = useRef("");
     const supabase = createClient();
 
     const {
@@ -35,7 +37,7 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
 
         // Custom Validation: Require either term OR chatInput
         // Note: validating against placeholders if Auto API was used
-        if (!data.term && !chatInput.trim()) {
+        if (!data.term && !chatInputRef.current.trim()) {
             alert("Please enter a term or provide context for auto-generation.");
             return;
         }
@@ -74,7 +76,7 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
                 supabase.functions.invoke("process-vocabulary", {
                     body: {
                         record_id: insertedData ? insertedData[0]?.id : null,
-                        chat_context: chatInput, // Pass chat instructions directly
+                        chat_context: chatInputRef.current, // Pass chat instructions directly
                         mode: "register"
                     },
                     headers: {
@@ -90,7 +92,7 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
             }
 
             reset();
-            setChatInput("");
+            chatInputRef.current = "";
             onSuccess?.();
         } catch (error: any) {
             console.error("Failed to add vocabulary:", error);
@@ -100,13 +102,14 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
         }
     };
 
-    // Handler for Auto API button click
-    const handleAutoApiClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        if (!chatInput.trim()) {
+    // Handler for ChatPanel submit
+    const handleChatSubmit = async (message: string) => {
+        if (!message.trim()) {
             alert("Please provide context to generate.");
             return;
         }
+
+        chatInputRef.current = message;
 
         // If term is empty, fill it with placeholder to pass Zod validation
         const currentTerm = getValues("term");
@@ -115,43 +118,23 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
         }
 
         // Submit the form
-        handleSubmit(onSubmit)();
+        await handleSubmit(onSubmit)();
     };
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Chat / Context Input Area */}
             <div className="space-y-2">
-                <Label htmlFor="chat-context" className="text-base font-semibold text-primary">
+                <Label className="text-base font-semibold text-primary">
                     AI Auto-Complete
                 </Label>
-                <div className="flex w-full items-center space-x-2">
-                    <Input
-                        id="chat-context"
-                        type="text"
-                        placeholder="Paste context, sentence, or instructions here..."
-                        value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
-                        className="flex-1"
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                document.getElementById('auto-api-btn')?.click();
-                            }
-                        }}
-                    />
-                    <Button
-                        id="auto-api-btn"
-                        type="button"
-                        disabled={isLoading}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
-                        onClick={handleAutoApiClick}
-                    >
-                        Auto API
-                    </Button>
-                </div>
+                <ChatInput
+                    placeholder="Paste context, sentence, or instructions here..."
+                    onSendMessage={handleChatSubmit}
+                    isSending={isLoading}
+                />
                 <p className="text-xs text-muted-foreground">
-                    Enter context above and click 'Auto API' to auto-generate details (even without a term).
+                    Enter context above and click the send button to auto-generate details (even without a term).
                 </p>
             </div>
 
