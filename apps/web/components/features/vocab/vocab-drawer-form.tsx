@@ -10,6 +10,7 @@ import { useAuth } from "@/components/auth-provider";
 import { useSessionStore } from "@/stores/use-session-store";
 import { SmartEditFunc } from "./smart-edit-func";
 import { motion, AnimatePresence } from "framer-motion";
+import useMeasure from "react-use/lib/useMeasure";
 
 export function VocabDrawerForm({ onSuccess }: { onSuccess?: () => void }) {
     const { user } = useAuth();
@@ -108,6 +109,8 @@ export function VocabDrawerForm({ onSuccess }: { onSuccess?: () => void }) {
         { id: "etymology", label: "語源" },
     ];
 
+    const [ref, { height }] = useMeasure<HTMLDivElement>();
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
             <div className="px-4 pb-4">
@@ -137,82 +140,82 @@ export function VocabDrawerForm({ onSuccess }: { onSuccess?: () => void }) {
                 </div>
 
                 <motion.div
-                    layout
-                    className="overflow-hidden"
-                    initial={false}
-                    animate={{ height: "auto" }}
+                    animate={{ height }}
                     transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                    className="overflow-hidden"
                 >
-                    <AnimatePresence mode="wait" initial={false}>
-                        {activeTab === "basic" && (
-                            <motion.div
-                                key="basic"
-                                initial={{ opacity: 0, x: 10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.2 }}
-                                className="space-y-4"
-                            >
-                                <div className="space-y-2">
-                                    <Label htmlFor="term">単語 <span className="text-red-500">*</span></Label>
-                                    <Input id="term" placeholder="例: Serendipity" {...register("term")} />
-                                    {errors.term && <p className="text-sm text-red-500">{errors.term.message}</p>}
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="definition">意味</Label>
-                                    <Input id="definition" placeholder="単語の意味" {...register("definition")} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="example">例文</Label>
-                                    <Textarea id="example" placeholder="文脈や使用例" {...register("example")} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="source_memo">出典 / メモ</Label>
-                                    <Input id="source_memo" placeholder="どこで見つけましたか？" {...register("source_memo")} />
-                                </div>
-                            </motion.div>
-                        )}
+                    <div ref={ref}>
+                        <AnimatePresence mode="wait" initial={false}>
+                            {activeTab === "basic" && (
+                                <motion.div
+                                    key="basic"
+                                    initial={{ opacity: 0, x: 10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="space-y-4 pb-1"
+                                >
+                                    <div className="space-y-2">
+                                        <Label htmlFor="term">単語 <span className="text-red-500">*</span></Label>
+                                        <Input id="term" placeholder="例: Serendipity" {...register("term")} />
+                                        {errors.term && <p className="text-sm text-red-500">{errors.term.message}</p>}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="definition">意味</Label>
+                                        <Input id="definition" placeholder="単語の意味" {...register("definition")} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="example">例文</Label>
+                                        <Textarea id="example" placeholder="文脈や使用例" {...register("example")} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="source_memo">出典 / メモ</Label>
+                                        <Input id="source_memo" placeholder="どこで見つけましたか？" {...register("source_memo")} />
+                                    </div>
+                                </motion.div>
+                            )}
 
-                        {activeTab === "relations" && (
-                            <motion.div
-                                key="relations"
-                                initial={{ opacity: 0, x: 10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.2 }}
-                                className="space-y-4"
-                            >
-                                <div className="space-y-2">
-                                    <Label htmlFor="synonyms">類義語</Label>
-                                    <Textarea id="synonyms" placeholder="スペースやカンマで区切って入力" {...register("synonyms")} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="collocations">コロケーション</Label>
-                                    <Textarea id="collocations" placeholder="関連語句を入力" {...register("collocations")} />
-                                </div>
-                            </motion.div>
-                        )}
+                            {activeTab === "relations" && (
+                                <motion.div
+                                    key="relations"
+                                    initial={{ opacity: 0, x: 10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="space-y-4 pb-1"
+                                >
+                                    <div className="space-y-2">
+                                        <Label htmlFor="synonyms">類義語</Label>
+                                        <Textarea id="synonyms" placeholder="スペースやカンマで区切って入力" {...register("synonyms")} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="collocations">コロケーション</Label>
+                                        <Textarea id="collocations" placeholder="関連語句を入力" {...register("collocations")} />
+                                    </div>
+                                </motion.div>
+                            )}
 
-                        {activeTab === "etymology" && (
-                            <motion.div
-                                key="etymology"
-                                initial={{ opacity: 0, x: 10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.2 }}
-                                className="space-y-4"
-                            >
-                                <div className="space-y-2">
-                                    <Label htmlFor="part_of_speech">品詞</Label>
-                                    <Input id="part_of_speech" placeholder="例: 名詞, 動詞" {...register("part_of_speech")} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="etymology">語源</Label>
-                                    <Textarea id="etymology" placeholder="単語の由来" {...register("etymology")} />
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                            {activeTab === "etymology" && (
+                                <motion.div
+                                    key="etymology"
+                                    initial={{ opacity: 0, x: 10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="space-y-4 pb-1"
+                                >
+                                    <div className="space-y-2">
+                                        <Label htmlFor="part_of_speech">品詞</Label>
+                                        <Input id="part_of_speech" placeholder="例: 名詞, 動詞" {...register("part_of_speech")} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="etymology">語源</Label>
+                                        <Textarea id="etymology" placeholder="単語の由来" {...register("etymology")} />
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </motion.div>
             </div>
 
