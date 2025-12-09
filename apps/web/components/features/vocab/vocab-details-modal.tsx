@@ -1,7 +1,7 @@
 "use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea, Skeleton } from "@repo/ui";
-import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Input, Skeleton, cn } from "@repo/ui";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { SmartEditFunc } from "./smart-edit-func";
 
@@ -10,6 +10,42 @@ interface VocabDetailsModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
+
+// Auto-resizing textarea component
+const AutoResizeTextarea = ({ className, value, onChange, placeholder, onBlur, ...props }: any) => {
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const adjustHeight = () => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = "auto";
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+    };
+
+    useLayoutEffect(() => {
+        adjustHeight();
+    }, [value]);
+
+    return (
+        <textarea
+            ref={textareaRef}
+            className={cn(
+                "flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none overflow-hidden min-h-[40px]",
+                className
+            )}
+            value={value}
+            onChange={(e) => {
+                adjustHeight();
+                onChange?.(e);
+            }}
+            onBlur={onBlur}
+            placeholder={placeholder}
+            rows={1}
+            {...props}
+        />
+    );
+};
 
 export function VocabDetailsModal({ vocab: initialVocab, open, onOpenChange }: VocabDetailsModalProps) {
     const [saving, setSaving] = useState(false);
@@ -104,19 +140,26 @@ export function VocabDetailsModal({ vocab: initialVocab, open, onOpenChange }: V
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl px-0 pb-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="px-6 py-4 border-b">
-                    <DialogHeader className="p-0">
+            <DialogContent className="max-w-[90%] w-full px-0 pb-0 gap-0 overflow-hidden flex flex-col max-h-[85vh] rounded-md">
+                <div className="px-6 py-4 border-b shrink-0">
+                    <DialogHeader className="p-0 space-y-2 text-left">
                         <div className="flex justify-between items-start mr-8">
                             <div className="flex-1">
+                                <DialogTitle className="sr-only">{vocab.term}</DialogTitle>
+                                <DialogDescription className="sr-only">
+                                    Edit details for {vocab.term}
+                                </DialogDescription>
+
                                 {isFieldGenerating("term") ? (
                                     <Skeleton className="h-9 w-full mb-1" />
                                 ) : (
+                                    // @ts-ignore
                                     <Input
                                         className="text-2xl font-bold border-none shadow-none focus-visible:ring-1 focus-visible:ring-gray-300 px-0 h-auto py-1"
                                         defaultValue={vocab.term}
                                         key={`term-${vocab.term}`}
-                                        onBlur={(e) => handleSave("term", e.target.value)}
+                                        onBlur={(e: any) => handleSave("term", e.target.value)}
+                                        aria-label="Term"
                                     />
                                 )}
                                 <div className="flex items-center gap-2 mt-1">
@@ -124,12 +167,14 @@ export function VocabDetailsModal({ vocab: initialVocab, open, onOpenChange }: V
                                     {isFieldGenerating("ipa") ? (
                                         <Skeleton className="h-6 w-32" />
                                     ) : (
+                                        // @ts-ignore
                                         <Input
                                             className="text-base font-normal text-gray-400 border-none shadow-none focus-visible:ring-1 focus-visible:ring-gray-300 px-0 h-auto py-0 w-32 inline-block"
                                             defaultValue={vocab.ipa || ""}
                                             key={`ipa-${vocab.ipa}`}
                                             placeholder="ipa"
-                                            onBlur={(e) => handleSave("ipa", e.target.value)}
+                                            onBlur={(e: any) => handleSave("ipa", e.target.value)}
+                                            aria-label="IPA Pronunciation"
                                         />
                                     )}
                                     <span className="text-base font-normal text-gray-400">/</span>
@@ -150,30 +195,32 @@ export function VocabDetailsModal({ vocab: initialVocab, open, onOpenChange }: V
                             {isFieldGenerating("part_of_speech") ? (
                                 <Skeleton className="h-5 w-1/3" />
                             ) : (
+                                // @ts-ignore
                                 <Input
                                     className="text-sm text-gray-500 italic border-none shadow-none focus-visible:ring-1 focus-visible:ring-gray-300 px-0 h-auto py-1 w-full"
                                     defaultValue={vocab.part_of_speech || ""}
                                     key={`pos-${vocab.part_of_speech}`}
                                     placeholder="Part of Speech"
-                                    onBlur={(e) => handleSave("part_of_speech", e.target.value)}
+                                    onBlur={(e: any) => handleSave("part_of_speech", e.target.value)}
+                                    aria-label="Part of Speech"
                                 />
                             )}
                         </div>
                     </DialogHeader>
                 </div>
 
-                <div className="space-y-6 p-6 overflow-y-auto flex-1">
+                <div className="space-y-6 p-6 overflow-y-auto flex-1 min-h-0">
                     <section>
                         <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-1">意味</h3>
                         {isFieldGenerating("definition") ? (
                             <Skeleton className="h-20 w-full" />
                         ) : (
-                            <Textarea
-                                className="bg-transparent border-transparent hover:border-input focus:border-input resize-none"
+                            <AutoResizeTextarea
+                                className="bg-transparent border-transparent hover:border-input focus:border-input"
                                 defaultValue={vocab.definition || ""}
                                 key={`def-${vocab.definition}`}
                                 placeholder="Add definition..."
-                                onBlur={(e) => handleSave("definition", e.target.value)}
+                                onBlur={(e: any) => handleSave("definition", e.target.value)}
                             />
                         )}
                     </section>
@@ -184,12 +231,12 @@ export function VocabDetailsModal({ vocab: initialVocab, open, onOpenChange }: V
                             {isFieldGenerating("example") ? (
                                 <Skeleton className="h-16 w-full" />
                             ) : (
-                                <Textarea
-                                    className="bg-transparent border-transparent hover:border-input focus:border-input resize-none italic text-gray-700 min-h-[60px]"
+                                <AutoResizeTextarea
+                                    className="bg-transparent border-transparent hover:border-input focus:border-input italic text-gray-700"
                                     defaultValue={vocab.example || ""}
                                     key={`ex-${vocab.example}`}
                                     placeholder="Add example sentence..."
-                                    onBlur={(e) => handleSave("example", e.target.value)}
+                                    onBlur={(e: any) => handleSave("example", e.target.value)}
                                 />
                             )}
                         </div>
@@ -201,11 +248,11 @@ export function VocabDetailsModal({ vocab: initialVocab, open, onOpenChange }: V
                             {isFieldGenerating("synonyms") ? (
                                 <Skeleton className="h-16 w-full" />
                             ) : (
-                                <Textarea
-                                    className="bg-transparent border-transparent hover:border-input focus:border-input resize-none"
+                                <AutoResizeTextarea
+                                    className="bg-transparent border-transparent hover:border-input focus:border-input"
                                     value={synonymsInput}
-                                    onChange={(e) => setSynonymsInput(e.target.value)}
-                                    onBlur={(e) => handleArraySave("synonyms", e.target.value)}
+                                    onChange={(e: any) => setSynonymsInput(e.target.value)}
+                                    onBlur={(e: any) => handleArraySave("synonyms", e.target.value)}
                                     placeholder="Comma separated..."
                                 />
                             )}
@@ -216,11 +263,11 @@ export function VocabDetailsModal({ vocab: initialVocab, open, onOpenChange }: V
                             {isFieldGenerating("collocations") ? (
                                 <Skeleton className="h-16 w-full" />
                             ) : (
-                                <Textarea
-                                    className="bg-transparent border-transparent hover:border-input focus:border-input resize-none"
+                                <AutoResizeTextarea
+                                    className="bg-transparent border-transparent hover:border-input focus:border-input"
                                     value={collocationsInput}
-                                    onChange={(e) => setCollocationsInput(e.target.value)}
-                                    onBlur={(e) => handleArraySave("collocations", e.target.value)}
+                                    onChange={(e: any) => setCollocationsInput(e.target.value)}
+                                    onBlur={(e: any) => handleArraySave("collocations", e.target.value)}
                                     placeholder="Comma separated..."
                                 />
                             )}
@@ -232,12 +279,12 @@ export function VocabDetailsModal({ vocab: initialVocab, open, onOpenChange }: V
                         {isFieldGenerating("etymology") ? (
                             <Skeleton className="h-16 w-full" />
                         ) : (
-                            <Textarea
-                                className="bg-transparent border-transparent hover:border-input focus:border-input resize-none"
+                            <AutoResizeTextarea
+                                className="bg-transparent border-transparent hover:border-input focus:border-input"
                                 defaultValue={vocab.etymology || ""}
                                 key={`ety-${vocab.etymology}`}
                                 placeholder="Add etymology..."
-                                onBlur={(e) => handleSave("etymology", e.target.value)}
+                                onBlur={(e: any) => handleSave("etymology", e.target.value)}
                             />
                         )}
                     </section>
@@ -247,12 +294,12 @@ export function VocabDetailsModal({ vocab: initialVocab, open, onOpenChange }: V
                         {isFieldGenerating("source_memo") ? (
                             <Skeleton className="h-16 w-full" />
                         ) : (
-                            <Textarea
-                                className="bg-transparent border-transparent hover:border-input focus:border-input resize-none"
+                            <AutoResizeTextarea
+                                className="bg-transparent border-transparent hover:border-input focus:border-input"
                                 defaultValue={vocab.source_memo || ""}
                                 key={`src-${vocab.source_memo}`}
                                 placeholder="Add memo..."
-                                onBlur={(e) => handleSave("source_memo", e.target.value)}
+                                onBlur={(e: any) => handleSave("source_memo", e.target.value)}
                             />
                         )}
                     </section>
