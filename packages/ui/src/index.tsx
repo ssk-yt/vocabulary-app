@@ -1,10 +1,10 @@
 export * from "./button";
 export * from "./input";
 export * from "./label";
-export * from "./chat-input";
 export * from "./dialog";
 export * from "./item";
 export * from "./skeleton";
 export * from "./textarea";
 export * from "./badge";
 export * from "./separator";
+export { ChatInput, type ChatInputProps } from "./chat-input";

@@ -8,7 +8,7 @@ import { Button, Input, Label } from "@repo/ui";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/auth-provider";
 import { useSessionStore } from "@/stores/use-session-store";
-import { ChatInput } from "@repo/ui";
+import { SmartEditFunc } from "./smart-edit-func";
 import { useRef } from "react";
 
 export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
@@ -128,7 +128,7 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
                 <Label className="text-base font-semibold text-primary">
                     AI Auto-Complete
                 </Label>
-                <ChatInput
+                <SmartEditFunc
                     placeholder="Paste context, sentence, or instructions here..."
                     onSendMessage={handleChatSubmit}
                     isSending={isLoading}

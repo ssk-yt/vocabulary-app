@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea, Skeleton } from "@repo/ui";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ChatPanel } from "./chat-panel";
+import { SmartEditFunc } from "./smart-edit-func";
 
 interface VocabDetailsModalProps {
     vocab: any;
@@ -259,7 +259,7 @@ export function VocabDetailsModal({ vocab: initialVocab, open, onOpenChange }: V
                 </div>
 
                 {/* Chat Panel Fixed at Bottom */}
-                <ChatPanel
+                <SmartEditFunc
                     vocabId={vocab.id}
                     vocabTerm={vocab.term}
                     onSetGeneratingFields={setGeneratingFields}

@@ -1,7 +1,8 @@
+console.log("Process-vocabulary module loading...");
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { createOpenAIClient, corsHeaders } from "../_shared/openai-client.ts";
-import { eq } from "npm:drizzle-orm@^0.30.0";
-import { db, vocabulary } from "@repo/db"; // Mapped to _shared/database.ts
+import { eq } from "drizzle-orm";
+import { getDb, vocabulary } from "../_shared/database.ts";
 
 Deno.serve(async (req) => {
     // 1. Handle CORS preflight
@@ -9,13 +10,14 @@ Deno.serve(async (req) => {
         return new Response("ok", { headers: corsHeaders });
     }
 
+    let record_id: string | null = null;
+
     try {
         console.log("Edge Function 'process-vocabulary' started.");
 
         // Environment Variables
         const supabaseUrl = Deno.env.get("SUPABASE_URL");
         const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-        // DATABASE_URL is initialized in @repo/db
 
         // Google API Key for Text Generation
         const googleApiKey = req.headers.get("X-OpenAI-Key") || Deno.env.get("GOOGLE_API_KEY") || Deno.env.get("SYSTEM_OPENAI_API_KEY");
@@ -28,11 +30,18 @@ Deno.serve(async (req) => {
             throw new Error("Missing API Key (Header or Env)");
         }
 
+        // Initialize DB (Lazy load to catch config errors here)
+        // This usually throws if DATABASE_URL is missing
+        const db = getDb();
+
         // Initialize Supabase (Keep for fetching input for now)
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         // Parse Request Body
-        const { record_id, chat_context, mode = "register" } = await req.json();
+        const body = await req.json();
+        record_id = body.record_id;
+        const { chat_context, mode = "register" } = body;
+
         console.log(`Received Request - Record: ${record_id}, Mode: ${mode}`);
 
         if (!record_id) {
@@ -296,17 +305,18 @@ Deno.serve(async (req) => {
     } catch (error) {
         console.error("Edge Function Error:", error);
 
-        // Attempt to reset is_generating flag if we have a record_id
-        try {
-            const { record_id } = await req.clone().json().catch(() => ({ record_id: null }));
-            if (record_id) {
+        // Attempt to reset is_generating flag using getDb() if we have a record_id
+        if (record_id) {
+            try {
+                // Initialize DB safely even in catch block
+                const db = getDb();
                 await db.update(vocabulary)
                     .set({ is_generating: false })
                     .where(eq(vocabulary.id, record_id));
                 console.log("Reset is_generating to false due to error.");
+            } catch (resetError) {
+                console.error("Failed to reset is_generating flag:", resetError);
             }
-        } catch (resetError) {
-            console.error("Failed to reset is_generating flag:", resetError);
         }
 
         return new Response(JSON.stringify({ error: error.message }), {
