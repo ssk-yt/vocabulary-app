@@ -3,7 +3,7 @@
 
 import { useAuth } from "@/components/auth-provider";
 import { AddVocabModal } from "@/components/features/vocab/add-vocab-modal";
-import { Button, Item, ItemContent, ItemHeader, ItemTitle, ItemDescription, Skeleton } from "@repo/ui";
+import { Button } from "@repo/ui";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRealtime } from "@/lib/hooks/use-realtime";
@@ -73,42 +73,28 @@ export default function Page() {
                         <AddVocabModal onVocabAdded={fetchVocab} />
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                         {vocabList.map((vocab) => (
-                            <div key={vocab.id} className="h-full" onClick={() => setSelectedVocab(vocab)}>
-                                <Item size="sm" className="h-full hover:bg-muted/50 transition-colors cursor-pointer relative overflow-hidden">
-                                    {vocab.is_generating && (
-                                        <div className="absolute inset-0 z-10 bg-white/50 flex items-center justify-center backdrop-blur-[1px]">
-                                            <div className="flex flex-col gap-2 w-full p-4">
-                                                <Skeleton className="h-4 w-3/4" />
-                                                <Skeleton className="h-4 w-1/2" />
-                                                <div className="flex gap-2 mt-2">
-                                                    <Skeleton className="h-8 w-16" />
-                                                </div>
-                                            </div>
-                                            {/* <span className="absolute bottom-2 right-2 text-xs font-medium text-blue-600 animate-pulse">
-                                                AI Generating...
-                                            </span> */}
-                                        </div>
-                                    )}
-                                    <ItemContent>
-                                        <ItemHeader>
-                                            <ItemTitle className="flex items-baseline gap-2">
-                                                <span>{vocab.term}</span>
-                                                <span className="text-sm font-normal text-muted-foreground">{vocab.part_of_speech}</span>
-                                            </ItemTitle>
-                                        </ItemHeader>
-                                        <ItemDescription className="mt-2 line-clamp-2">
-                                            {vocab.definition || "No definition yet..."}
-                                        </ItemDescription>
-                                        {vocab.example && (
-                                            <div className="mt-4 p-3 bg-muted/50 rounded-md text-sm text-foreground/90 italic line-clamp-2 border">
-                                                "{vocab.example}"
-                                            </div>
-                                        )}
-                                    </ItemContent>
+                            <div
+                                key={vocab.id}
+                                onClick={() => setSelectedVocab(vocab)}
+                                className={`
+                                    group relative flex items-center justify-center p-4 min-h-[80px]
+                                    rounded-lg border bg-card text-card-foreground shadow-sm transition-all
+                                    hover:bg-muted/50 cursor-pointer overflow-hidden
+                                    ${vocab.is_generating ? 'animate-pulse border-blue-200 bg-blue-50/50' : ''}
+                                `}
+                            >
+                                <span className="text-center font-medium line-clamp-2 break-words">
+                                    {vocab.term}
+                                </span>
 
-                                </Item>
+                                {vocab.is_generating && (
+                                    <span className="absolute top-1 right-1 flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                    </span>
+                                )}
                             </div>
                         ))}
                         {vocabList.length === 0 && (
