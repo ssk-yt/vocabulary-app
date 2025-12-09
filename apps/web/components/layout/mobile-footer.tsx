@@ -4,7 +4,7 @@ import { LayoutDashboard, List, Plus, Gamepad2, User } from "lucide-react";
 import { Button } from "@repo/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AddVocabModal } from "../features/vocab/add-vocab-modal";
+import { AddVocabDrawer } from "../features/vocab/add-vocab-drawer";
 
 export function MobileFooter() {
     const pathname = usePathname();
@@ -30,7 +30,7 @@ export function MobileFooter() {
 
             {/* 3. Add (Central Button) */}
             <div className="relative -top-5">
-                <AddVocabModal
+                <AddVocabDrawer
                     trigger={
                         <Button
                             size="icon"
