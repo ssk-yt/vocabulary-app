@@ -68,9 +68,17 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
 
             // Invoke Edge Function
             const { apiKey } = useSessionStore.getState();
-            console.log("Submitting vocabulary...", { insertedId: insertedData?.[0]?.id, hasApiKey: !!apiKey });
+            // Allow processing if apiKey exists OR if user is anonymous
+            const shouldProcess = !!apiKey || user?.is_anonymous;
 
-            if (apiKey) {
+            console.log("Submitting vocabulary...", {
+                insertedId: insertedData?.[0]?.id,
+                hasApiKey: !!apiKey,
+                isAnonymous: user?.is_anonymous,
+                shouldProcess
+            });
+
+            if (shouldProcess) {
                 console.log("Invoking process-vocabulary...");
                 // Fire and forget - don't await to keep UI responsive
                 supabase.functions.invoke("process-vocabulary", {
@@ -79,16 +87,16 @@ export function VocabForm({ onSuccess }: { onSuccess?: () => void }) {
                         chat_context: chatInputRef.current, // Pass chat instructions directly
                         mode: "register"
                     },
-                    headers: {
+                    headers: apiKey ? {
                         "X-OpenAI-Key": apiKey
-                    }
+                    } : undefined
                 }).then(({ data, error }) => {
                     console.log("Edge Function response:", { data, error });
                 }).catch(err => {
                     console.error("Edge Function invocation error:", err);
                 });
             } else {
-                console.warn("No API key found in session store. Skipping AI processing.");
+                console.warn("No API key found and user is not anonymous. Skipping AI processing.");
             }
 
             reset();
