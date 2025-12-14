@@ -18,7 +18,7 @@ export function AddVocabModal({ onVocabAdded, trigger }: { onVocabAdded?: () => 
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="max-w-[90%] rounded-md">
+            <DialogContent className="max-w-[90%] rounded-md max-h-[85dvh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Add New Vocabulary</DialogTitle>
                 </DialogHeader>

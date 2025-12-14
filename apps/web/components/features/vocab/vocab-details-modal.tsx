@@ -140,7 +140,7 @@ export function VocabDetailsModal({ vocab: initialVocab, open, onOpenChange }: V
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[90%] w-full px-0 pb-0 gap-0 overflow-hidden flex flex-col max-h-[85vh] rounded-md">
+            <DialogContent className="max-w-[90%] w-full px-0 pb-0 gap-0 overflow-hidden flex flex-col max-h-[85dvh] rounded-md">
                 <div className="px-6 py-4 border-b shrink-0">
                     <DialogHeader className="p-0 space-y-2 text-left">
                         <div className="flex justify-between items-start mr-8">
