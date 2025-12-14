@@ -20,7 +20,12 @@ Deno.serve(async (req) => {
         const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
         // Google API Key for Text Generation
-        const googleApiKey = req.headers.get("X-OpenAI-Key") || Deno.env.get("GOOGLE_API_KEY") || Deno.env.get("SYSTEM_OPENAI_API_KEY");
+        // Google API Key for Text Generation
+        let googleApiKey = req.headers.get("X-OpenAI-Key");
+        if (googleApiKey === "DEMO_MODE_ACTIVE" || !googleApiKey) {
+            // Use server-side key for Demo Mode or if header is missing
+            googleApiKey = Deno.env.get("GOOGLE_API_KEY") || Deno.env.get("SYSTEM_OPENAI_API_KEY");
+        }
 
         // Config check
         if (!supabaseUrl || !supabaseKey) {

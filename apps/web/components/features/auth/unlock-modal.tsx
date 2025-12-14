@@ -45,8 +45,10 @@ export function UnlockModal() {
                 .eq("id", user.id)
                 .single();
 
-            // 暗号化されたAPI KeyがDBにあり（つまり一度もAPIキーを設定していない場合はモーダルが開かない），かつ複合済みのAPIキーがなければ，モーダルを開く（→）
-            if (data?.encrypted_api_key && !apiKey) {
+            // 暗号化されたAPI KeyがDBにある場合、またはデモモードが有効な場合にモーダルを開く
+            const shouldOpen = (data?.encrypted_api_key || process.env.NEXT_PUBLIC_ENABLE_DEMO === "true") && !apiKey;
+
+            if (shouldOpen) {
                 setIsOpen(true);
             }
         };
@@ -133,6 +135,18 @@ export function UnlockModal() {
                         >
                             Skip (Read Only)
                         </Button>
+                        {process.env.NEXT_PUBLIC_ENABLE_DEMO === "true" && (
+                            <Button
+                                type="button"
+                                onClick={() => {
+                                    setApiKey("DEMO_MODE_ACTIVE");
+                                    setIsOpen(false);
+                                }}
+                                className="bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded"
+                            >
+                                Try Demo
+                            </Button>
+                        )}
                         <Button type="submit" disabled={isLoading || !password} className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded">
                             {isLoading ? "Unlocking..." : "Unlock"}
                         </Button>

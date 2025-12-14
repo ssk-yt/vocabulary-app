@@ -126,8 +126,20 @@ export default function SettingsPage() {
                             </Button>
                         </div>
                     ) : (
-                        <div className="p-4 bg-yellow-50 text-yellow-700 rounded-md">
-                            API Key is NOT loaded. You need to decrypt it to use AI features.
+                        <div className="p-4 bg-yellow-50 text-yellow-700 rounded-md space-y-3">
+                            <p>API Key is NOT loaded. You need to decrypt it to use AI features.</p>
+                            {process.env.NEXT_PUBLIC_ENABLE_DEMO === "true" && (
+                                <Button
+                                    onClick={() => {
+                                        setApiKey("DEMO_MODE_ACTIVE");
+                                        setStatus("success");
+                                        setMessage("Demo Mode Activated! You can now use AI features.");
+                                    }}
+                                    className="bg-green-600 text-white hover:bg-green-700 w-full md:w-auto"
+                                >
+                                    Try Demo Mode (No Key Required)
+                                </Button>
+                            )}
                         </div>
                     )}
 

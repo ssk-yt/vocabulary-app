@@ -112,6 +112,37 @@ export default function LoginPage() {
                             Sign up
                         </Button>
                     </div>
+
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300" />
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="bg-white px-2 text-gray-500">Or continue without account</span>
+                        </div>
+                    </div>
+
+                    <Button
+                        type="button"
+                        onClick={async () => {
+                            setLoading(true);
+                            setError(null);
+                            try {
+                                const { error } = await supabase.auth.signInAnonymously();
+                                if (error) throw error;
+                                router.push("/");
+                                router.refresh();
+                            } catch (err: any) {
+                                setError(err.message);
+                            } finally {
+                                setLoading(false);
+                            }
+                        }}
+                        disabled={loading}
+                        className="group relative flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 disabled:opacity-50"
+                    >
+                        Continue as Guest (Try Demo)
+                    </Button>
                 </form>
             </div>
         </div>
