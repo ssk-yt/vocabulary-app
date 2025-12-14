@@ -10,3 +10,4 @@ export * from "./separator";
 export { ChatInput, type ChatInputProps } from "./chat-input";
 export * from "./drawer";
 export * from "./tabs";
+export * from "./utils";

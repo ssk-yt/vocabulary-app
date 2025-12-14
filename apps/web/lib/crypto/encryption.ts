@@ -50,7 +50,7 @@ async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey>
     return window.crypto.subtle.deriveKey(
         {
             name: "PBKDF2",
-            salt: salt,
+            salt: salt as unknown as BufferSource,
             iterations: ITERATIONS,
             hash: "SHA-256",
         },
@@ -70,7 +70,7 @@ export async function encryptAPIKey(apiKey: string, password: string): Promise<E
     const ciphertext = await window.crypto.subtle.encrypt(
         {
             name: ALGORITHM,
-            iv: iv,
+            iv: iv as unknown as BufferSource,
         },
         key,
         enc.encode(apiKey)
@@ -78,8 +78,8 @@ export async function encryptAPIKey(apiKey: string, password: string): Promise<E
 
     return {
         ciphertext: arrayBufferToBase64(ciphertext),
-        iv: arrayBufferToBase64(iv),
-        salt: arrayBufferToBase64(salt),
+        iv: arrayBufferToBase64(iv.buffer),
+        salt: arrayBufferToBase64(salt.buffer),
     };
 }
 
@@ -94,10 +94,10 @@ export async function decryptAPIKey(encryptedData: EncryptedData, password: stri
         const decrypted = await window.crypto.subtle.decrypt(
             {
                 name: ALGORITHM,
-                iv: iv,
+                iv: iv as unknown as BufferSource,
             },
             key,
-            ciphertext
+            ciphertext as unknown as BufferSource
         );
 
         const dec = new TextDecoder();

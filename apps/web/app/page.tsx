@@ -10,6 +10,7 @@ import { useRealtime } from "@/lib/hooks/use-realtime";
 
 import { useRouter } from "next/navigation";
 import { VocabDetailsModal } from "@/components/features/vocab/vocab-details-modal";
+import { Settings } from "lucide-react";
 
 export default function Page() {
     const { user, isLoading, signOut } = useAuth();
@@ -55,20 +56,21 @@ export default function Page() {
     return (
         <main className="min-h-screen bg-gray-50">
             <header className="bg-white shadow">
-                <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+                <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between gap-4 sm:flex-row sm:justify-between sm:items-center">
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
-                    <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                    <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-end">
                         <span className="text-sm text-gray-500 hidden sm:inline-block">{user.email}</span>
                         <div className="flex gap-2">
-                            <Button onClick={() => router.push("/settings")} variant="ghost" className="text-sm">Settings</Button>
-                            <Button onClick={signOut} variant="destructive" className="text-sm">Sign Out</Button>
+                            <Button onClick={() => router.push("/settings")} variant="ghost" size="icon">
+                                <Settings className="h-5 w-5" />
+                            </Button>
                         </div>
                     </div>
                 </div>
             </header>
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div className="px-4 py-6 sm:px-0">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div className="flex sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <h2 className="text-xl font-semibold">Your Vocabulary</h2>
                         <AddVocabModal onVocabAdded={fetchVocab} />
                     </div>

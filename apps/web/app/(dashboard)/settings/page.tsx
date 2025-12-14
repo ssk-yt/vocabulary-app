@@ -9,7 +9,7 @@ import { useSessionStore } from "@/stores/use-session-store";
 import { useAuth } from "@/components/auth-provider";
 
 export default function SettingsPage() {
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const { apiKey, setApiKey } = useSessionStore();
     const [inputKey, setInputKey] = useState("");
     const [password, setPassword] = useState("");
@@ -174,6 +174,12 @@ export default function SettingsPage() {
                         </div>
                     )}
                 </div>
+            </div>
+
+            <div className="mt-8 flex justify-center">
+                <Button onClick={signOut} variant="destructive" className="w-full sm:w-auto">
+                    Sign Out
+                </Button>
             </div>
         </div>
     );
