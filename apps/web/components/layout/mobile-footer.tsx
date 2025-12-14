@@ -6,8 +6,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AddVocabDrawer } from "../features/vocab/add-vocab-drawer";
 
+import { useAuth } from "@/components/auth-provider";
+
 export function MobileFooter() {
     const pathname = usePathname();
+    const { user } = useAuth();
+
+    if (!user || pathname === "/login") return null;
 
     // Helper to determine active state (simple exact match for now)
     const isActive = (path: string) => pathname === path;
