@@ -16,7 +16,7 @@ export function AddVocabDrawer({ onVocabAdded, trigger }: { onVocabAdded?: () =>
                 <DrawerHeader>
                     <DrawerTitle>Add New Vocabulary</DrawerTitle>
                 </DrawerHeader>
-                <div className="flex-1 h-full overflow-hidden">
+                <div className="flex-1 h-full overflow-y-auto">
                     <VocabDrawerForm onSuccess={() => {
                         setOpen(false);
                         onVocabAdded?.();
