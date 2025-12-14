@@ -48,7 +48,7 @@ export default function Page() {
             <main className="flex min-h-screen flex-col items-center justify-center p-24 space-y-4">
                 <h1 className="text-4xl font-bold">Vocabulary App</h1>
                 <p>Please log in to continue.</p>
-                <Button>Login</Button>
+                <Button size="lg" variant="default" onClick={() => router.push("/login")}>Login</Button>
             </main>
         );
     }
