@@ -3,6 +3,9 @@
     "globalDependencies": [
         "**/.env.*local"
     ],
+    "globalEnv": [
+        "DATABASE_URL"
+    ],
     "tasks": {
         "build": {
             "dependsOn": [
